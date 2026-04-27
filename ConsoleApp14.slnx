@@ -1,3 +1,330 @@
-<Solution>
-  <Project Path="ConsoleApp14/ConsoleApp14.csproj" />
-</Solution>
+using System;
+
+namespace JuegoAhorcado
+{
+    class Program
+    {
+        static string[] palabras = {
+            "programacion","algoritmo","compilador","herencia","polimorfismo",
+            "encapsulacion","variable","recursividad","puntero","excepcion"
+        };
+
+        static string[] categorias = {
+            "Tecnologia","Tecnologia","Tecnologia","POO","POO",
+            "POO","Fundamentos","Fundamentos","Fundamentos","Fundamentos"
+        };
+
+        static string[] pistas = {
+            "Proceso de escribir instrucciones para una computadora",
+            "Secuencia de pasos para resolver un problema",
+            "Traduce codigo fuente a lenguaje maquina",
+            "Mecanismo por el que una clase obtiene propiedades de otra",
+            "Capacidad de un objeto de tomar multiples formas",
+            "Ocultar detalles internos de una clase",
+            "Espacio en memoria con nombre y valor",
+            "Funcion que se llama a si misma",
+            "Almacena direccion de memoria de otra variable",
+            "Error en tiempo de ejecucion"
+        };
+
+        static string[] fases = {
+            "  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========",
+            "  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n========="
+        };
+
+        static int partidasJugadas = 0;
+        static int partidasGanadas = 0;
+        const int MAX_INTENTOS = 6;
+
+        static Random rnd = new Random();
+
+        static void Main(string[] args)
+        {
+            bool enApp = true;
+
+            while (enApp)
+            {
+                string opcion = MostrarMenu();
+
+                switch (opcion)
+                {
+                    case "1": Jugar(); break;
+                    case "2": MostrarInstrucciones(); break;
+                    case "3": MostrarEstadisticas(); break;
+                    case "4":
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("\nHasta pronto!");
+                        Console.ResetColor();
+                        enApp = false;
+                        break;
+                    default:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\nOpcion no valida.");
+                        Console.ResetColor();
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
+
+        static string MostrarMenu()
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+
+            Console.WriteLine("======================================");
+            Console.WriteLine("        JUEGO DEL AHORCADO");
+            Console.WriteLine("======================================");
+
+            Console.ResetColor();
+
+            Console.WriteLine("1. Jugar");
+            Console.WriteLine("2. Instrucciones");
+            Console.WriteLine("3. Estadisticas");
+            Console.WriteLine("4. Salir");
+
+            if (partidasJugadas > 0)
+            {
+                int porcentaje = partidasGanadas * 100 / partidasJugadas;
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("\nGanadas: " + partidasGanadas + "/" + partidasJugadas + " (" + porcentaje + "%)");
+                Console.ResetColor();
+            }
+
+            Console.Write("\nOpcion: ");
+            return Console.ReadLine();
+        }
+
+        static void MostrarInstrucciones()
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Yellow;
+
+            Console.WriteLine("INSTRUCCIONES");
+            Console.WriteLine("- Adivina la palabra");
+            Console.WriteLine("- Maximo 6 errores");
+            Console.WriteLine("- Solo letras");
+
+            Console.ResetColor();
+            Console.ReadKey();
+        }
+
+        static void MostrarEstadisticas()
+        {
+            Console.Clear();
+
+            if (partidasJugadas == 0)
+            {
+                Console.WriteLine("No has jugado.");
+            }
+            else
+            {
+                int porcentaje = partidasGanadas * 100 / partidasJugadas;
+
+                Console.WriteLine("Jugadas : " + partidasJugadas);
+                Console.WriteLine("Ganadas : " + partidasGanadas);
+                Console.WriteLine("Perdidas: " + (partidasJugadas - partidasGanadas));
+                Console.WriteLine("Exito   : " + porcentaje + "%");
+            }
+
+            Console.ReadKey();
+        }
+
+        static int SeleccionarIndice()
+        {
+            return rnd.Next(palabras.Length);
+        }
+
+        static bool LetraValida(string entrada)
+        {
+            if (entrada == null || entrada.Length != 1)
+                return false;
+
+            char letra = entrada[0];
+
+            if (letra >= 'A' && letra <= 'Z')
+                letra = (char)(letra + 32);
+
+            return (letra >= 'a' && letra <= 'z');
+        }
+
+        static bool LetraYaUsada(char letra, char[] usadas, int total)
+        {
+            for (int i = 0; i < total; i++)
+                if (usadas[i] == letra)
+                    return true;
+
+            return false;
+        }
+
+        static string ConstruirMascara(string palabra, char[] adivinadas, int total)
+        {
+            string texto = "";
+
+            for (int i = 0; i < palabra.Length; i++)
+            {
+                bool encontrada = false;
+
+                for (int j = 0; j < total; j++)
+                    if (palabra[i] == adivinadas[j])
+                        encontrada = true;
+
+                texto += encontrada ? palabra[i] + " " : "_ ";
+            }
+
+            return texto;
+        }
+
+        static bool EstaCompleta(string palabra, char[] adivinadas, int total)
+        {
+            for (int i = 0; i < palabra.Length; i++)
+            {
+                bool encontrada = false;
+
+                for (int j = 0; j < total; j++)
+                    if (palabra[i] == adivinadas[j])
+                        encontrada = true;
+
+                if (!encontrada) return false;
+            }
+            return true;
+        }
+
+        static void DibujarEstado(int indice, char[] adivinadas, int totalAdivinadas,
+                                 char[] usadas, int totalUsadas, int fallos)
+        {
+            Console.Clear();
+
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(fases[fallos]);
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("\nCategoria: " + categorias[indice]);
+
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine("Pista: " + pistas[indice]);
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\nPalabra: " + ConstruirMascara(palabras[indice], adivinadas, totalAdivinadas));
+
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.Write("\nUsadas: ");
+            for (int i = 0; i < totalUsadas; i++)
+                Console.Write(usadas[i] + " ");
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("\nErrores: " + fallos + "/" + MAX_INTENTOS);
+
+            Console.ResetColor();
+        }
+
+        static void Jugar()
+        {
+            bool repetir = true;
+
+            while (repetir)
+            {
+                int indice = SeleccionarIndice();
+
+                char[] adivinadas = new char[26];
+                char[] usadas = new char[26];
+
+                int totalAdivinadas = 0;
+                int totalUsadas = 0;
+                int fallos = 0;
+
+                bool jugando = true;
+
+                while (jugando)
+                {
+                    DibujarEstado(indice, adivinadas, totalAdivinadas, usadas, totalUsadas, fallos);
+
+                    Console.Write("\nIngresa letra: ");
+                    string entrada = Console.ReadLine();
+
+                    if (!LetraValida(entrada))
+                    {
+                        Console.WriteLine("Entrada invalida.");
+                        Console.ReadKey();
+                        continue;
+                    }
+
+                    char letra = entrada[0];
+                    if (letra >= 'A' && letra <= 'Z')
+                        letra = (char)(letra + 32);
+
+                    if (LetraYaUsada(letra, usadas, totalUsadas))
+                    {
+                        Console.WriteLine("Ya usaste esa letra.");
+                        Console.ReadKey();
+                        continue;
+                    }
+
+                    usadas[totalUsadas++] = letra;
+
+                    bool encontrada = false;
+
+                    for (int i = 0; i < palabras[indice].Length; i++)
+                    {
+                        if (palabras[indice][i] == letra)
+                        {
+                            encontrada = true;
+                            break;
+                        }
+                    }
+
+                    if (encontrada)
+                    {
+                        bool yaEstaba = false;
+
+                        for (int i = 0; i < totalAdivinadas; i++)
+                            if (adivinadas[i] == letra)
+                                yaEstaba = true;
+
+                        if (!yaEstaba)
+                            adivinadas[totalAdivinadas++] = letra;
+                    }
+                    else
+                    {
+                        fallos++;
+                    }
+
+                    if (EstaCompleta(palabras[indice], adivinadas, totalAdivinadas) || fallos >= MAX_INTENTOS)
+                        jugando = false;
+                }
+
+                bool gano = EstaCompleta(palabras[indice], adivinadas, totalAdivinadas);
+
+                Console.Clear();
+
+                if (gano)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("GANASTE!");
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("PERDISTE!");
+                }
+
+                Console.ResetColor();
+
+                Console.WriteLine("Palabra: " + palabras[indice].ToUpper());
+
+                partidasJugadas++;
+                if (gano) partidasGanadas++;
+
+                Console.Write("\nJugar otra vez? (s/n): ");
+                string r = Console.ReadLine();
+
+                repetir = (r == "s" || r == "S");
+            }
+        }
+    }
+}
