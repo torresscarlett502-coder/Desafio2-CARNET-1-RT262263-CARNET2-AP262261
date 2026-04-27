@@ -1,3 +1,67 @@
-<Solution>
-  <Project Path="ConsoleApp15/ConsoleApp15.csproj" />
-</Solution>
+using System;
+using System.ComponentModel.Design;
+class program
+{
+    static void Main()
+    {
+        //Solicitar cantidad de N de estudiantes 
+        Console.WriteLine("Ingresar cantidad de estudiantes a registrar: ");
+        int n = int.Parse(Console.ReadLine());
+
+        //Declarar vectores pararelos
+        string[] nombres = new string[n];
+        double[] notas = new double[n]; // Se agrega el arreglo de notas
+        Console.WriteLine("---Estructura Creada con exito---");
+        double sumaNotas = 0;
+        for (int i = 0; i < n; i++)
+        {
+            Console.WriteLine($"Ingresar nombre de estudiante {i + 1}: ");
+            nombres[i] = Console.ReadLine();
+
+            double nota;
+            //Validacion de Notas entre 0 y 10
+            do
+            {
+                Console.WriteLine($"Ingresar nota de {nombres[i]} (0.0 - 10.0): ");
+                nota = double.Parse(Console.ReadLine());
+                if (nota < 0 || nota > 10)
+                {
+                    Console.WriteLine("Nota inválida. Debe estar entre 0.0 y 10.0");
+                }
+            } while (nota < 0 || nota > 10);
+            notas[i] = nota;
+            sumaNotas += notas[i];
+        }
+        double promedioGeneral = sumaNotas / n;
+        //Calculo del promedioGeneral
+
+        Console.WriteLine("/n---REPORTE FINAL---");
+        for (int i = 0; i < n; i++)
+        {
+            string letra;
+            //Clasificacion de notas por letra
+
+            if (notas[i] >= 9)
+                letra = "A";
+            else
+                if (notas[i] >= 8)
+                    letra = "B";
+            if (notas[i] >= 7)
+                letra = "C";
+            if (notas[i] >= 6)
+                letra = "D";
+            else letra = "F";
+            string estado = (notas[i] >= 6.0) ? "Aprobado" : "Reprobado";
+
+            //Determinacion de estado
+
+            Console.WriteLine($"Estudiante: {nombres[i]} Nota: {notas[i]} Letra: {letra} Estado: {estado}");
+        }
+        Console.WriteLine($"\nPromedio General del grupo: {promedioGeneral:F2}");
+
+        //Resumen Final
+
+        Console.WriteLine("\nPresione cualquier tecla para salir...");
+        Console.ReadKey();
+    }
+}
